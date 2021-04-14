@@ -69,7 +69,7 @@ jobs:
           path: ./dist/static
 
   deploy:
-    needs: [startup, test, build]
+    needs: [startup, build]
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
