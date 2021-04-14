@@ -2,88 +2,19 @@
 # https://help.github.com/en/articles/about-github-actions
 # https://help.github.com/en/articles/workflow-syntax-for-github-actions
 
-name: CI/CD
+name: Scully Publish
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
-  startup:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Use Node.js 12.8
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.8
-
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Install
-        run: npm install -f
-
   build:
-    needs: [startup]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      # - name: Cache node modules
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-build-${{ env.cache-name }}-
-      #       ${{ runner.os }}-build-
-      #       ${{ runner.os }}-
-
-      - name: Install
-        run: npm install -f
-
-      - name: Build Angular
-        run: ./node_modules/.bin/ng build --prod
-
-      - name: Update Scully route
-        run: npm run scully:scan
-
-      - name: Build Scully
-        run: npm run scully
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v1
+      - uses: actions/checkout@v1
+      - uses: cmgriffing/scully-gh-pages-action@v9
         with:
-          name: static
-          path: ./dist/static
-
-  deploy:
-    needs: [startup, build]
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: static
-          path: dist
-
-      - name: Deploy to Pages
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: dist # The folder the action should deploy.
+          access-token: ${{ secrets.ACCESS_TOKEN }}
+          deploy-branch: ghpages
